@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -112,7 +111,7 @@ class BlockchainControllerIntegrationTest {
 
     @Test
     @DisplayName("GET /export retourne du JSON contenant le hash")
-    void exportReturnsJsonString() throws IOException {
+    void exportReturnsJsonString() {
         String json = controller.exportJson();
 
         assertNotNull(json);
@@ -122,7 +121,7 @@ class BlockchainControllerIntegrationTest {
 
     @Test
     @DisplayName("GET /export contient les données des blocs ajoutés")
-    void exportContainsAddedBlockData() throws IOException {
+    void exportContainsAddedBlockData() {
         controller.addBlock(new BlockRequest("Données exportées"));
 
         String json = controller.exportJson();
@@ -132,7 +131,7 @@ class BlockchainControllerIntegrationTest {
 
     @Test
     @DisplayName("Workflow complet : ajout de blocs puis validation")
-    void fullWorkflowViaController() throws IOException {
+    void fullWorkflowViaController() {
         controller.addBlock(new BlockRequest("Premier bloc"));
 
         controller.addTicketBlock(

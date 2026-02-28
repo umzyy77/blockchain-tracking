@@ -17,7 +17,7 @@ class ProofOfWorkTest {
 
         pow.validate(block);
 
-        assertTrue(block.hash.startsWith("000"));
+        assertTrue(block.getHash().startsWith("000"));
     }
 
     @Test
@@ -28,7 +28,7 @@ class ProofOfWorkTest {
 
         pow.validate(block);
 
-        assertTrue(block.nonce >= 0);
+        assertTrue(block.getNonce() >= 0);
     }
 
     @Test
@@ -39,7 +39,7 @@ class ProofOfWorkTest {
 
         pow.validate(block);
 
-        assertEquals(block.hash, block.calculateHash());
+        assertEquals(block.getHash(), block.calculateHash());
     }
 
     @Test
@@ -55,11 +55,11 @@ class ProofOfWorkTest {
     void difficultyZeroAcceptsImmediately() {
         ProofOfWork pow = new ProofOfWork(0);
         Block block = new Block(1, "Data", "prev");
-        int originalNonce = block.nonce;
+        int originalNonce = block.getNonce();
 
         pow.validate(block);
 
-        assertEquals(originalNonce, block.nonce, "Aucun minage nécessaire avec difficulté 0");
+        assertEquals(originalNonce, block.getNonce(), "Aucun minage nécessaire avec difficulté 0");
     }
 
     @Test
@@ -70,6 +70,6 @@ class ProofOfWorkTest {
 
         pow.validate(block);
 
-        assertTrue(block.hash.startsWith("0"));
+        assertTrue(block.getHash().startsWith("0"));
     }
 }

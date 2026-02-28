@@ -7,7 +7,6 @@ import com.example.blockchain.dto.ValidationResponse;
 import com.example.blockchain.mapper.BlockMapper;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -70,7 +69,7 @@ public class BlockchainController {
      * GET /api/blockchain/export - Exporter la blockchain en JSON
      */
     @GetMapping("/export")
-    public String exportJson() throws IOException {
+    public String exportJson() {
         return blockchain.exportAsJson();
     }
 }

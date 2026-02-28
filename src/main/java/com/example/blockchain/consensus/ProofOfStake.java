@@ -1,8 +1,12 @@
 package com.example.blockchain.consensus;
 
 import com.example.blockchain.Block;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * Proof of Stake (PoS) : les validateurs sont choisis proportionnellement
@@ -10,6 +14,9 @@ import java.util.*;
  * d'être sélectionné.
  */
 public class ProofOfStake implements ConsensusMechanism {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProofOfStake.class);
+
     private final Map<String, Integer> stakes;
     private final Random random = new Random();
 
@@ -42,8 +49,8 @@ public class ProofOfStake implements ConsensusMechanism {
     @Override
     public void validate(Block block) {
         String validator = selectValidator();
-        System.out.println("[PoS] Bloc #" + block.index + " validé par " + validator
-                + " (stake=" + stakes.getOrDefault(validator, 0) + ")");
+        logger.info("[PoS] Bloc #{} validé par {} (stake={})",
+                block.getIndex(), validator, stakes.getOrDefault(validator, 0));
     }
 
     @Override

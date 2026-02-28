@@ -1,13 +1,14 @@
 package com.example.blockchain;
 
 import com.example.blockchain.consensus.ConsensusMechanism;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,9 @@ import java.util.List;
  */
 @Service
 public class Blockchain {
+
+    private static final Logger logger = LoggerFactory.getLogger(Blockchain.class);
+
     private final List<Block> chain;
     private ConsensusMechanism consensusMechanism;
 
@@ -30,14 +34,14 @@ public class Blockchain {
 
     public void addBlock(String data) {
         Block lastBlock = chain.getLast();
-        Block newBlock = new Block(chain.size(), data, lastBlock.hash);
+        Block newBlock = new Block(chain.size(), data, lastBlock.getHash());
         applyConsensus(newBlock);
         chain.add(newBlock);
     }
 
     public void addBlock(String data, String eventId, String artist, String status, String owner) {
         Block lastBlock = chain.getLast();
-        Block newBlock = new Block(chain.size(), data, lastBlock.hash, eventId, artist, status, owner);
+        Block newBlock = new Block(chain.size(), data, lastBlock.getHash(), eventId, artist, status, owner);
         applyConsensus(newBlock);
         chain.add(newBlock);
     }
@@ -58,15 +62,13 @@ public class Blockchain {
             Block current = chain.get(i);
             Block previous = chain.get(i - 1);
 
-            // Vérifier que le hash du bloc est correct
-            if (!current.hash.equals(current.calculateHash())) {
-                System.out.println("Hash invalide au bloc #" + i);
+            if (!current.getHash().equals(current.calculateHash())) {
+                logger.warn("Hash invalide au bloc #{}", i);
                 return false;
             }
 
-            // Vérifier le chaînage avec le bloc précédent
-            if (!current.previousHash.equals(previous.hash)) {
-                System.out.println("Chaînage rompu au bloc #" + i);
+            if (!current.getPreviousHash().equals(previous.getHash())) {
+                logger.warn("Chaînage rompu au bloc #{}", i);
                 return false;
             }
         }
@@ -76,24 +78,24 @@ public class Blockchain {
     /**
      * Export de la blockchain en JSON.
      */
-    public String exportAsJson() throws IOException {
+    public String exportAsJson() {
         ObjectMapper mapper = JsonMapper.builder()
                 .enable(SerializationFeature.INDENT_OUTPUT)
                 .build();
         return mapper.writeValueAsString(chain);
     }
 
-    public void saveToFile(String filename) throws IOException {
+    public void saveToFile(String filename) {
         ObjectMapper mapper = JsonMapper.builder()
                 .enable(SerializationFeature.INDENT_OUTPUT)
                 .build();
         mapper.writeValue(new File(filename), chain);
-        System.out.println("Blockchain exportée dans " + filename);
+        logger.info("Blockchain exportée dans {}", filename);
     }
 
     public void displayChain() {
         for (Block block : chain) {
-            System.out.println(block);
+            logger.info("{}", block);
         }
     }
 

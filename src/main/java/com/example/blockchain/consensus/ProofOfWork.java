@@ -1,12 +1,17 @@
 package com.example.blockchain.consensus;
 
 import com.example.blockchain.Block;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Proof of Work (PoW) : le mineur doit trouver un nonce tel que
  * le hash du bloc commence par un certain nombre de zéros (difficulté).
  */
 public class ProofOfWork implements ConsensusMechanism {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProofOfWork.class);
+
     private final int difficulty;
 
     public ProofOfWork(int difficulty) {
@@ -16,12 +21,12 @@ public class ProofOfWork implements ConsensusMechanism {
     @Override
     public void validate(Block block) {
         String target = "0".repeat(difficulty);
-        while (!block.hash.startsWith(target)) {
-            block.nonce++;
-            block.hash = block.calculateHash();
+        while (!block.getHash().startsWith(target)) {
+            block.setNonce(block.getNonce() + 1);
+            block.setHash(block.calculateHash());
         }
-        System.out.println("[PoW] Bloc #" + block.index + " miné avec nonce=" + block.nonce
-                + " (difficulté=" + difficulty + ")");
+        logger.info("[PoW] Bloc #{} miné avec nonce={} (difficulté={})",
+                block.getIndex(), block.getNonce(), difficulty);
     }
 
     @Override

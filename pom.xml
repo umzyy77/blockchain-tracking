@@ -13,6 +13,10 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- Sonar -->
+        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.coverage.exclusions>**/Application.java,**/BlockchainSwingUI.java</sonar.coverage.exclusions>
     </properties>
 
     <dependencies>

@@ -1,6 +1,8 @@
 package com.example.blockchain.consensus;
 
 import com.example.blockchain.Block;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,9 @@ import java.util.List;
  * d'acteurs de confiance (autorités). Chaque autorité valide à tour de rôle.
  */
 public class ProofOfAuthority implements ConsensusMechanism {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProofOfAuthority.class);
+
     private final List<String> authorities;
     private int currentIndex = 0;
 
@@ -24,13 +29,13 @@ public class ProofOfAuthority implements ConsensusMechanism {
     @Override
     public void validate(Block block) {
         if (authorities.isEmpty()) {
-            System.out.println("[PoA] Aucune autorité configurée !");
+            logger.warn("[PoA] Aucune autorité configurée !");
             return;
         }
 
         String authority = authorities.get(currentIndex % authorities.size());
         currentIndex++;
-        System.out.println("[PoA] Bloc #" + block.index + " validé par l'autorité: " + authority);
+        logger.info("[PoA] Bloc #{} validé par l'autorité: {}", block.getIndex(), authority);
     }
 
     @Override

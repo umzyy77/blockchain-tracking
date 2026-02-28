@@ -1,6 +1,8 @@
 package com.example.blockchain.consensus;
 
 import com.example.blockchain.Block;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,9 @@ import java.util.Random;
  * 2/3 des nœuds votent en sa faveur (tolérance aux pannes byzantines).
  */
 public class PBFT implements ConsensusMechanism {
+
+    private static final Logger logger = LoggerFactory.getLogger(PBFT.class);
+
     private final List<String> nodes;
     private final Random random = new Random();
 
@@ -26,7 +31,7 @@ public class PBFT implements ConsensusMechanism {
     @Override
     public void validate(Block block) {
         if (nodes.isEmpty()) {
-            System.out.println("[PBFT] Aucun nœud configuré !");
+            logger.warn("[PBFT] Aucun nœud configuré !");
             return;
         }
 
@@ -35,7 +40,6 @@ public class PBFT implements ConsensusMechanism {
         List<String> voters = new ArrayList<>();
 
         for (String node : nodes) {
-            // Simulation : chaque nœud a 85% de chance de voter positivement
             if (random.nextDouble() < 0.85) {
                 votes++;
                 voters.add(node);
@@ -43,14 +47,12 @@ public class PBFT implements ConsensusMechanism {
         }
 
         boolean accepted = votes >= requiredVotes;
-        System.out.println("[PBFT] Bloc #" + block.index
-                + " | Votes: " + votes + "/" + nodes.size()
-                + " (requis: " + requiredVotes + ")"
-                + " | " + (accepted ? "ACCEPTÉ" : "REJETÉ")
-                + " | Votants: " + voters);
+        logger.info("[PBFT] Bloc #{} | Votes: {}/{} (requis: {}) | {} | Votants: {}",
+                block.getIndex(), votes, nodes.size(), requiredVotes,
+                accepted ? "ACCEPTÉ" : "REJETÉ", voters);
 
         if (!accepted) {
-            System.out.println("[PBFT] ATTENTION: Le bloc n'a pas atteint le consensus !");
+            logger.warn("[PBFT] ATTENTION: Le bloc n'a pas atteint le consensus !");
         }
     }
 

@@ -5,14 +5,21 @@ import com.example.blockchain.consensus.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.io.IOException;
+import java.io.Serial;
 
 /**
  * Interface graphique Swing pour manipuler la blockchain.
  */
 public class BlockchainSwingUI extends JFrame {
 
-    private final Blockchain blockchain;
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    private static final String EVENT_ID = "EVT-2025-001";
+    private static final String ARTIST = "Daft Punk";
+    private static final String CHARLIE = "Charlie";
+
+    private final transient Blockchain blockchain;
     private final DefaultTableModel tableModel;
     private final JTextArea logArea;
     private final JComboBox<String> consensusCombo;
@@ -21,7 +28,7 @@ public class BlockchainSwingUI extends JFrame {
         super("Blockchain - Billetterie Spectacle");
         this.blockchain = new Blockchain();
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(1100, 700);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(5, 5));
@@ -100,7 +107,7 @@ public class BlockchainSwingUI extends JFrame {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         JButton addBtn = new JButton("Ajouter Bloc");
-        addBtn.addActionListener(e -> {
+        addBtn.addActionListener(_ -> {
             String data = dataField.getText().trim();
             if (data.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Le champ Données est obligatoire !");
@@ -122,7 +129,7 @@ public class BlockchainSwingUI extends JFrame {
         });
 
         JButton validateBtn = new JButton("Vérifier intégrité");
-        validateBtn.addActionListener(e -> {
+        validateBtn.addActionListener(_ -> {
             boolean valid = blockchain.isChainValid();
             log("Vérification d'intégrité: " + (valid ? "VALIDE" : "CORROMPUE !"));
             JOptionPane.showMessageDialog(this,
@@ -131,18 +138,14 @@ public class BlockchainSwingUI extends JFrame {
         });
 
         JButton exportBtn = new JButton("Exporter JSON");
-        exportBtn.addActionListener(e -> {
-            try {
-                blockchain.saveToFile("blockchain.json");
-                log("Blockchain exportée dans blockchain.json");
-                JOptionPane.showMessageDialog(this, "Exporté dans blockchain.json");
-            } catch (IOException ex) {
-                log("Erreur export: " + ex.getMessage());
-            }
+        exportBtn.addActionListener(_ -> {
+            blockchain.saveToFile("blockchain.json");
+            log("Blockchain exportée dans blockchain.json");
+            JOptionPane.showMessageDialog(this, "Exporté dans blockchain.json");
         });
 
         JButton workflowBtn = new JButton("Simuler Workflow Ticket");
-        workflowBtn.addActionListener(e -> simulateTicketWorkflow());
+        workflowBtn.addActionListener(_ -> simulateTicketWorkflow());
 
         buttonPanel.add(addBtn);
         buttonPanel.add(validateBtn);
@@ -168,7 +171,7 @@ public class BlockchainSwingUI extends JFrame {
                 ProofOfStake pos = new ProofOfStake();
                 pos.addValidator("Alice", 50);
                 pos.addValidator("Bob", 30);
-                pos.addValidator("Charlie", 20);
+                pos.addValidator(CHARLIE, 20);
                 blockchain.setConsensusMechanism(pos);
                 log("Consensus: Proof of Stake (Alice:50, Bob:30, Charlie:20)");
             }
@@ -179,7 +182,7 @@ public class BlockchainSwingUI extends JFrame {
                 pbft.addNode("Noeud-Marseille");
                 pbft.addNode("Noeud-Bordeaux");
                 blockchain.setConsensusMechanism(pbft);
-                log("Consensus: PBFT (4 nœuds)");
+                log("Consensus: PBFT (4 noeuds)");
             }
             case "Proof of Authority" -> {
                 ProofOfAuthority poa = new ProofOfAuthority();
@@ -189,9 +192,7 @@ public class BlockchainSwingUI extends JFrame {
                 blockchain.setConsensusMechanism(poa);
                 log("Consensus: Proof of Authority (3 autorités)");
             }
-            default -> {
-                blockchain.setConsensusMechanism(null);
-            }
+            default -> blockchain.setConsensusMechanism(null);
         }
     }
 
@@ -204,19 +205,19 @@ public class BlockchainSwingUI extends JFrame {
 
         blockchain.setConsensusMechanism(null);
 
-        blockchain.addBlock("Ticket acheté", "EVT-2025-001", "Daft Punk", "ACHETE", "Alice");
+        blockchain.addBlock("Ticket acheté", EVENT_ID, ARTIST, "ACHETE", "Alice");
         log("1. Alice achète le ticket pour Daft Punk");
 
-        blockchain.addBlock("Ticket revendu", "EVT-2025-001", "Daft Punk", "REVENDU", "Bob");
+        blockchain.addBlock("Ticket revendu", EVENT_ID, ARTIST, "REVENDU", "Bob");
         log("2. Alice revend le ticket à Bob");
 
-        blockchain.addBlock("Ticket revendu", "EVT-2025-001", "Daft Punk", "REVENDU", "Charlie");
+        blockchain.addBlock("Ticket revendu", EVENT_ID, ARTIST, "REVENDU", CHARLIE);
         log("3. Bob revend le ticket à Charlie");
 
-        blockchain.addBlock("Ticket utilisé", "EVT-2025-001", "Daft Punk", "UTILISE", "Charlie");
+        blockchain.addBlock("Ticket utilisé", EVENT_ID, ARTIST, "UTILISE", CHARLIE);
         log("4. Charlie utilise le ticket pour entrer au concert");
 
-        blockchain.addBlock("Ticket invalidé", "EVT-2025-001", "Daft Punk", "INVALIDE", "Charlie");
+        blockchain.addBlock("Ticket invalidé", EVENT_ID, ARTIST, "INVALIDE", CHARLIE);
         log("5. Le ticket est désormais INVALIDE (utilisé)");
 
         refreshTable();
@@ -230,14 +231,14 @@ public class BlockchainSwingUI extends JFrame {
         tableModel.setRowCount(0);
         for (Block block : blockchain.getChain()) {
             tableModel.addRow(new Object[]{
-                    block.index,
-                    block.timestamp,
-                    block.data,
-                    block.eventId != null ? block.eventId : "",
-                    block.artist != null ? block.artist : "",
-                    block.status != null ? block.status : "",
-                    block.owner != null ? block.owner : "",
-                    block.hash.substring(0, 16) + "..."
+                    block.getIndex(),
+                    block.getTimestamp(),
+                    block.getData(),
+                    block.getEventId() != null ? block.getEventId() : "",
+                    block.getArtist() != null ? block.getArtist() : "",
+                    block.getStatus() != null ? block.getStatus() : "",
+                    block.getOwner() != null ? block.getOwner() : "",
+                    block.getHash().substring(0, 16) + "..."
             });
         }
     }

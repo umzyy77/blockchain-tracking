@@ -4,9 +4,6 @@ import com.example.blockchain.Block;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Tests unitaires - Proof of Stake")
@@ -46,7 +43,6 @@ class ProofOfStakeTest {
         ProofOfStake pos = new ProofOfStake();
         pos.addValidator("Unique", 100);
 
-        // Valider plusieurs blocs, aucun crash
         for (int i = 0; i < 10; i++) {
             Block block = new Block(i, "Data " + i, "prev");
             assertDoesNotThrow(() -> pos.validate(block));
@@ -60,7 +56,6 @@ class ProofOfStakeTest {
         pos.addValidator("Gros", 90);
         pos.addValidator("Petit", 10);
 
-        // On valide beaucoup de blocs, ça ne doit jamais crasher
         for (int i = 0; i < 100; i++) {
             Block block = new Block(i, "Data", "prev");
             assertDoesNotThrow(() -> pos.validate(block));

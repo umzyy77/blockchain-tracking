@@ -15,16 +15,16 @@ public class BlockMapper {
 
     public BlockResponse toResponse(Block block) {
         return new BlockResponse(
-                block.index,
-                block.timestamp,
-                block.data,
-                block.previousHash,
-                block.hash,
-                block.eventId,
-                block.artist,
-                block.status,
-                block.owner,
-                block.nonce
+                block.getIndex(),
+                block.getTimestamp(),
+                block.getData(),
+                block.getPreviousHash(),
+                block.getHash(),
+                block.getEventId(),
+                block.getArtist(),
+                block.getStatus(),
+                block.getOwner(),
+                block.getNonce()
         );
     }
 

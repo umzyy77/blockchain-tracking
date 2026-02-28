@@ -60,8 +60,8 @@ class BlockMapperTest {
     @DisplayName("toResponseList mappe une liste de blocs")
     void toResponseListMapsList() {
         Block block1 = new Block(0, "Genèse", "0");
-        Block block2 = new Block(1, "Bloc 1", block1.hash);
-        Block block3 = new Block(2, "Bloc 2", block2.hash,
+        Block block2 = new Block(1, "Bloc 1", block1.getHash());
+        Block block3 = new Block(2, "Bloc 2", block2.getHash(),
                 "EVT-001", "Artiste", "ACHETE", "Bob");
 
         List<BlockResponse> responses = mapper.toResponseList(List.of(block1, block2, block3));
