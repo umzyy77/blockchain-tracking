@@ -1,11 +1,31 @@
 package com.example.blockchain;
 
-import com.example.blockchain.consensus.*;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.io.Serial;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableModel;
+
+import com.example.blockchain.consensus.PBFT;
+import com.example.blockchain.consensus.ProofOfAuthority;
+import com.example.blockchain.consensus.ProofOfStake;
+import com.example.blockchain.consensus.ProofOfWork;
 
 /**
  * Interface graphique Swing pour manipuler la blockchain.
@@ -33,6 +53,11 @@ public class BlockchainSwingUI extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(5, 5));
 
+        // Combo consensus (initialisé avant createInputPanel qui l'utilise)
+        consensusCombo = new JComboBox<>(new String[]{
+                "Aucun", "Proof of Work", "Proof of Stake", "PBFT", "Proof of Authority"
+        });
+
         // Panel de saisie (haut)
         JPanel inputPanel = createInputPanel();
         add(inputPanel, BorderLayout.NORTH);
@@ -54,11 +79,6 @@ public class BlockchainSwingUI extends JFrame {
         logScroll.setBorder(BorderFactory.createTitledBorder("Logs"));
         add(logScroll, BorderLayout.SOUTH);
 
-        // Combo consensus
-        consensusCombo = new JComboBox<>(new String[]{
-                "Aucun", "Proof of Work", "Proof of Stake", "PBFT", "Proof of Authority"
-        });
-
         refreshTable();
     }
 
@@ -72,7 +92,9 @@ public class BlockchainSwingUI extends JFrame {
         JTextField dataField = new JTextField(20);
         JTextField eventField = new JTextField(10);
         JTextField artistField = new JTextField(10);
-        JTextField statusField = new JTextField(10);
+        JComboBox<String> statusCombo = new JComboBox<>(new String[]{
+                "CREE", "ACHETE", "REVENDU", "UTILISE", "INVALIDE"
+        });
         JTextField ownerField = new JTextField(10);
 
         // Ligne 1
@@ -96,7 +118,7 @@ public class BlockchainSwingUI extends JFrame {
         gbc.gridx = 2;
         panel.add(new JLabel("Statut:"), gbc);
         gbc.gridx = 3;
-        panel.add(statusField, gbc);
+        panel.add(statusCombo, gbc);
 
         gbc.gridx = 4;
         panel.add(new JLabel("Propriétaire:"), gbc);
@@ -117,14 +139,14 @@ public class BlockchainSwingUI extends JFrame {
             blockchain.addBlock(data,
                     eventField.getText().trim(),
                     artistField.getText().trim(),
-                    statusField.getText().trim(),
+                    (String) statusCombo.getSelectedItem(),
                     ownerField.getText().trim());
             refreshTable();
             log("Bloc #" + (blockchain.size() - 1) + " ajouté: " + data);
             dataField.setText("");
             eventField.setText("");
             artistField.setText("");
-            statusField.setText("");
+            statusCombo.setSelectedIndex(0);
             ownerField.setText("");
         });
 

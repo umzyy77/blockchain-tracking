@@ -1,12 +1,18 @@
 package com.example.blockchain;
 
-import com.example.blockchain.consensus.*;
+import java.awt.GraphicsEnvironment;
+
+import javax.swing.SwingUtilities;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import javax.swing.*;
+import com.example.blockchain.consensus.PBFT;
+import com.example.blockchain.consensus.ProofOfAuthority;
+import com.example.blockchain.consensus.ProofOfStake;
+import com.example.blockchain.consensus.ProofOfWork;
 
 @SpringBootApplication
 public class Application {
@@ -92,12 +98,18 @@ public class Application {
         logger.info("  GET  /api/blockchain/validate - Vérifier intégrité");
         logger.info("  GET  /api/blockchain/export   - Exporter en JSON");
 
-        SpringApplication.run(Application.class, args);
+        SpringApplication app = new SpringApplication(Application.class);
+        app.setHeadless(false);
+        app.run(args);
 
-        // --- Lancement interface Swing ---
-        SwingUtilities.invokeLater(() -> {
-            BlockchainSwingUI ui = new BlockchainSwingUI();
-            ui.setVisible(true);
-        });
+        // --- Lancement interface Swing (seulement si un écran est disponible) ---
+        if (!GraphicsEnvironment.isHeadless()) {
+            SwingUtilities.invokeLater(() -> {
+                BlockchainSwingUI ui = new BlockchainSwingUI();
+                ui.setVisible(true);
+            });
+        } else {
+            logger.info("Mode headless détecté : interface Swing désactivée.");
+        }
     }
 }
