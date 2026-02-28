@@ -1,19 +1,27 @@
 package com.example.blockchain;
 
-import com.example.blockchain.dto.BlockRequest;
-import com.example.blockchain.dto.BlockResponse;
-import com.example.blockchain.dto.TicketRequest;
-import com.example.blockchain.dto.ValidationResponse;
-import com.example.blockchain.mapper.BlockMapper;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.blockchain.dto.BlockResponse;
+import com.example.blockchain.dto.TicketRequest;
+import com.example.blockchain.mapper.BlockMapper;
+
 /**
- * TP 4 (Bonus) : API REST pour manipuler la blockchain.
+ * API REST pour manipuler la blockchain.
+ * Endpoints : GET all, GET by id, POST.
+ * La blockchain étant immuable, PUT et DELETE ne sont pas supportés.
  */
 @RestController
-@RequestMapping("/api/blockchain")
+@RequestMapping("/api/blocks")
 public class BlockchainController {
 
     private final Blockchain blockchain;
@@ -25,51 +33,39 @@ public class BlockchainController {
     }
 
     /**
-     * GET /api/blockchain/chain - Afficher toute la chaîne
+     * GET /api/blocks - Récupérer tous les blocs de la chaîne.
      */
-    @GetMapping("/chain")
-    public List<BlockResponse> getChain() {
+    @GetMapping
+    public List<BlockResponse> getAll() {
         return blockMapper.toResponseList(blockchain.getChain());
     }
 
     /**
-     * POST /api/blockchain/block - Ajouter un bloc simple
+     * GET /api/blocks/{index} - Récupérer un bloc par son index.
      */
-    @PostMapping("/block")
-    public BlockResponse addBlock(@RequestBody BlockRequest request) {
-        blockchain.addBlock(request.data());
+    @GetMapping("/{index}")
+    public BlockResponse getById(@PathVariable int index) {
+        return blockMapper.toResponse(blockchain.getBlockByIndex(index));
+    }
+
+    /**
+     * POST /api/blocks - Créer un nouveau bloc.
+     */
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public BlockResponse create(@RequestBody TicketRequest request) {
+        boolean hasTicketData = !request.eventId().isEmpty()
+                || !request.artist().isEmpty()
+                || !request.status().isEmpty()
+                || !request.owner().isEmpty();
+
+        if (hasTicketData) {
+            blockchain.addBlock(request.data(), request.eventId(), request.artist(),
+                    request.status(), request.owner());
+        } else {
+            blockchain.addBlock(request.data());
+        }
+
         return blockMapper.toResponse(blockchain.getLastBlock());
-    }
-
-    /**
-     * POST /api/blockchain/ticket - Ajouter un bloc avec données de billetterie
-     */
-    @PostMapping("/ticket")
-    public BlockResponse addTicketBlock(@RequestBody TicketRequest request) {
-        blockchain.addBlock(
-                request.data(),
-                request.eventId(),
-                request.artist(),
-                request.status(),
-                request.owner()
-        );
-        return blockMapper.toResponse(blockchain.getLastBlock());
-    }
-
-    /**
-     * GET /api/blockchain/validate - Vérifier l'intégrité de la chaîne
-     */
-    @GetMapping("/validate")
-    public ValidationResponse validate() {
-        boolean valid = blockchain.isChainValid();
-        return blockMapper.toValidationResponse(valid, blockchain.size());
-    }
-
-    /**
-     * GET /api/blockchain/export - Exporter la blockchain en JSON
-     */
-    @GetMapping("/export")
-    public String exportJson() {
-        return blockchain.exportAsJson();
     }
 }

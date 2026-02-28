@@ -92,11 +92,9 @@ public class Application {
         // --- Lancement API REST Spring Boot ---
         logger.info("--- Démarrage API REST Spring Boot ---");
         logger.info("Endpoints disponibles:");
-        logger.info("  GET  /api/blockchain/chain    - Afficher la chaîne");
-        logger.info("  POST /api/blockchain/block    - Ajouter un bloc");
-        logger.info("  POST /api/blockchain/ticket   - Ajouter un ticket");
-        logger.info("  GET  /api/blockchain/validate - Vérifier intégrité");
-        logger.info("  GET  /api/blockchain/export   - Exporter en JSON");
+        logger.info("  GET    /api/blocks        - Récupérer tous les blocs");
+        logger.info("  GET    /api/blocks/{id}   - Récupérer un bloc par index");
+        logger.info("  POST   /api/blocks        - Créer un nouveau bloc");
 
         SpringApplication app = new SpringApplication(Application.class);
         app.setHeadless(false);

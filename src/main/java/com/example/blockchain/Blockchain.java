@@ -1,16 +1,19 @@
 package com.example.blockchain;
 
-import com.example.blockchain.consensus.ConsensusMechanism;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.SerializationFeature;
-import tools.jackson.databind.json.JsonMapper;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.example.blockchain.consensus.ConsensusMechanism;
+import com.example.blockchain.exception.BlockNotFoundException;
+
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Service métier : chaîne de blocs avec vérification d'intégrité, export JSON et consensus.
@@ -109,5 +112,12 @@ public class Blockchain {
 
     public int size() {
         return chain.size();
+    }
+
+    public Block getBlockByIndex(int index) {
+        if (index < 0 || index >= chain.size()) {
+            throw new BlockNotFoundException(index);
+        }
+        return chain.get(index);
     }
 }

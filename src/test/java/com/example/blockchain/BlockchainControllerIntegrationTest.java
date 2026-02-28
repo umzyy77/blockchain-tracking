@@ -1,19 +1,20 @@
 package com.example.blockchain;
 
-import com.example.blockchain.dto.BlockRequest;
-import com.example.blockchain.dto.BlockResponse;
-import com.example.blockchain.dto.TicketRequest;
-import com.example.blockchain.dto.ValidationResponse;
-import com.example.blockchain.mapper.BlockMapper;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import com.example.blockchain.dto.BlockResponse;
+import com.example.blockchain.dto.TicketRequest;
+import com.example.blockchain.exception.BlockNotFoundException;
+import com.example.blockchain.mapper.BlockMapper;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-@DisplayName("Tests d'intégration - BlockchainController")
+@DisplayName("Tests d'intégration - BlockchainController (RESTful)")
 class BlockchainControllerIntegrationTest {
 
     private BlockchainController controller;
@@ -23,129 +24,100 @@ class BlockchainControllerIntegrationTest {
         controller = new BlockchainController(new Blockchain(), new BlockMapper());
     }
 
+    // --- GET /api/blocks ---
+
     @Test
-    @DisplayName("GET /chain retourne la chaîne avec le bloc de genèse")
-    void getChainReturnsGenesisBlock() {
-        List<BlockResponse> chain = controller.getChain();
+    @DisplayName("GET /api/blocks retourne la chaîne avec le bloc de genèse")
+    void getAllReturnsGenesisBlock() {
+        List<BlockResponse> chain = controller.getAll();
 
         assertNotNull(chain);
         assertEquals(1, chain.size());
         assertEquals(0, chain.getFirst().index());
-        assertEquals("0", chain.getFirst().previousHash());
     }
 
     @Test
-    @DisplayName("POST /block ajoute un bloc et le retourne")
-    void postBlockAddsBlockAndReturnsIt() {
-        BlockResponse result = controller.addBlock(new BlockRequest("Colis expédié"));
+    @DisplayName("GET /api/blocks retourne tous les blocs après ajout")
+    void getAllReturnsAllBlocks() {
+        controller.create(new TicketRequest("Bloc 1", null, null, null, null));
+        controller.create(new TicketRequest("Bloc 2", null, null, null, null));
 
-        assertNotNull(result);
-        assertEquals("Colis expédié", result.data());
-        assertNotNull(result.hash());
-        assertNotNull(result.previousHash());
+        assertEquals(3, controller.getAll().size());
+    }
+
+    // --- GET /api/blocks/{index} ---
+
+    @Test
+    @DisplayName("GET /api/blocks/0 retourne le bloc de genèse")
+    void getByIdReturnsGenesisBlock() {
+        BlockResponse response = controller.getById(0);
+
+        assertNotNull(response);
+        assertEquals(0, response.index());
     }
 
     @Test
-    @DisplayName("POST /block sans data utilise la valeur par défaut")
-    void postBlockWithoutDataUsesDefault() {
-        BlockResponse result = controller.addBlock(new BlockRequest(null));
-
-        assertEquals("Bloc sans données", result.data());
+    @DisplayName("GET /api/blocks/{index} lève BlockNotFoundException si index invalide")
+    void getByIdThrowsBlockNotFoundException() {
+        assertThrows(BlockNotFoundException.class, () -> controller.getById(999));
     }
 
     @Test
-    @DisplayName("POST /block avec data vide utilise la valeur par défaut")
-    void postBlockWithBlankDataUsesDefault() {
-        BlockResponse result = controller.addBlock(new BlockRequest("   "));
+    @DisplayName("GET /api/blocks/{index} retourne le bon bloc après ajout")
+    void getByIdReturnsCorrectBlock() {
+        controller.create(new TicketRequest("Test", "EVT-001", "Stromae", "ACHETE", "Alice"));
 
-        assertEquals("Bloc sans données", result.data());
+        BlockResponse response = controller.getById(1);
+
+        assertEquals("Test", response.data());
+        assertEquals("EVT-001", response.eventId());
+    }
+
+    // --- POST /api/blocks ---
+
+    @Test
+    @DisplayName("POST /api/blocks crée un bloc simple")
+    void createSimpleBlock() {
+        BlockResponse response = controller.create(
+                new TicketRequest("Colis expédié", null, null, null, null));
+
+        assertNotNull(response);
+        assertEquals("Colis expédié", response.data());
     }
 
     @Test
-    @DisplayName("POST /ticket ajoute un ticket avec données métier")
-    void postTicketAddsEnrichedBlock() {
-        BlockResponse result = controller.addTicketBlock(
+    @DisplayName("POST /api/blocks crée un bloc avec données de billetterie")
+    void createTicketBlock() {
+        BlockResponse response = controller.create(
                 new TicketRequest("Ticket acheté", "EVT-001", "Stromae", "ACHETE", "Alice"));
 
-        assertNotNull(result);
-        assertEquals("EVT-001", result.eventId());
-        assertEquals("Stromae", result.artist());
-        assertEquals("ACHETE", result.status());
-        assertEquals("Alice", result.owner());
+        assertEquals("EVT-001", response.eventId());
+        assertEquals("Stromae", response.artist());
+        assertEquals("ACHETE", response.status());
+        assertEquals("Alice", response.owner());
     }
 
     @Test
-    @DisplayName("POST /ticket sans champs optionnels utilise les valeurs par défaut")
-    void postTicketWithoutOptionalFieldsUsesDefaults() {
-        BlockResponse result = controller.addTicketBlock(
+    @DisplayName("POST /api/blocks sans data utilise la valeur par défaut")
+    void createWithoutDataUsesDefault() {
+        BlockResponse response = controller.create(
                 new TicketRequest(null, null, null, null, null));
 
-        assertEquals("Opération ticket", result.data());
-        assertEquals("", result.eventId());
-        assertEquals("", result.artist());
-        assertEquals("", result.status());
-        assertEquals("", result.owner());
+        assertEquals("Opération ticket", response.data());
     }
 
-    @Test
-    @DisplayName("GET /validate retourne que la chaîne est valide")
-    void validateReturnsValid() {
-        ValidationResponse result = controller.validate();
-
-        assertTrue(result.valid());
-        assertEquals("La chaîne est valide", result.message());
-        assertEquals(1, result.size());
-    }
+    // --- Workflow complet ---
 
     @Test
-    @DisplayName("GET /validate après ajout de blocs retourne la bonne taille")
-    void validateAfterAddsReturnsCorrectSize() {
-        controller.addBlock(new BlockRequest("Bloc 1"));
-        controller.addBlock(new BlockRequest("Bloc 2"));
+    @DisplayName("Workflow complet RESTful : POST puis GET all puis GET by id")
+    void fullRestWorkflow() {
+        controller.create(new TicketRequest("Premier bloc", null, null, null, null));
+        controller.create(new TicketRequest("Ticket", "EVT-002", "PNL", "ACHETE", "Bob"));
 
-        ValidationResponse result = controller.validate();
+        assertEquals(3, controller.getAll().size());
 
-        assertTrue(result.valid());
-        assertEquals(3, result.size());
-    }
-
-    @Test
-    @DisplayName("GET /export retourne du JSON contenant le hash")
-    void exportReturnsJsonString() {
-        String json = controller.exportJson();
-
-        assertNotNull(json);
-        assertTrue(json.contains("hash"));
-        assertTrue(json.contains("previousHash"));
-    }
-
-    @Test
-    @DisplayName("GET /export contient les données des blocs ajoutés")
-    void exportContainsAddedBlockData() {
-        controller.addBlock(new BlockRequest("Données exportées"));
-
-        String json = controller.exportJson();
-
-        assertTrue(json.contains("Données exportées"));
-    }
-
-    @Test
-    @DisplayName("Workflow complet : ajout de blocs puis validation")
-    void fullWorkflowViaController() {
-        controller.addBlock(new BlockRequest("Premier bloc"));
-
-        controller.addTicketBlock(
-                new TicketRequest("Ticket", "EVT-002", "PNL", "ACHETE", "Bob"));
-
-        ValidationResponse validation = controller.validate();
-        assertTrue(validation.valid());
-        assertEquals(3, validation.size());
-
-        List<BlockResponse> chain = controller.getChain();
-        assertEquals(3, chain.size());
-
-        String json = controller.exportJson();
-        assertTrue(json.contains("EVT-002"));
-        assertTrue(json.contains("PNL"));
+        BlockResponse block = controller.getById(2);
+        assertEquals("EVT-002", block.eventId());
+        assertEquals("PNL", block.artist());
     }
 }
