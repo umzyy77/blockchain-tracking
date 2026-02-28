@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * Practical Byzantine Fault Tolerance (PBFT).
@@ -18,7 +18,7 @@ public class PBFT implements ConsensusMechanism {
     private static final Logger logger = LoggerFactory.getLogger(PBFT.class);
 
     private final List<String> nodes;
-    private final Random random = new Random();
+    private final SecureRandom random = new SecureRandom();
 
     public PBFT() {
         this.nodes = new ArrayList<>();

@@ -38,6 +38,7 @@ public class BlockchainSwingUI extends JFrame {
     private static final String EVENT_ID = "EVT-2025-001";
     private static final String ARTIST = "Daft Punk";
     private static final String CHARLIE = "Charlie";
+    private static final String REVENDU = "REVENDU";
 
     private final transient Blockchain blockchain;
     private final DefaultTableModel tableModel;
@@ -93,7 +94,7 @@ public class BlockchainSwingUI extends JFrame {
         JTextField eventField = new JTextField(10);
         JTextField artistField = new JTextField(10);
         JComboBox<String> statusCombo = new JComboBox<>(new String[]{
-                "CREE", "ACHETE", "REVENDU", "UTILISE", "INVALIDE"
+                "CREE", "ACHETE", REVENDU, "UTILISE", "INVALIDE"
         });
         JTextField ownerField = new JTextField(10);
 
@@ -230,10 +231,10 @@ public class BlockchainSwingUI extends JFrame {
         blockchain.addBlock("Ticket acheté", EVENT_ID, ARTIST, "ACHETE", "Alice");
         log("1. Alice achète le ticket pour Daft Punk");
 
-        blockchain.addBlock("Ticket revendu", EVENT_ID, ARTIST, "REVENDU", "Bob");
+        blockchain.addBlock("Ticket revendu", EVENT_ID, ARTIST, REVENDU, "Bob");
         log("2. Alice revend le ticket à Bob");
 
-        blockchain.addBlock("Ticket revendu", EVENT_ID, ARTIST, "REVENDU", CHARLIE);
+        blockchain.addBlock("Ticket revendu", EVENT_ID, ARTIST, REVENDU, CHARLIE);
         log("3. Bob revend le ticket à Charlie");
 
         blockchain.addBlock("Ticket utilisé", EVENT_ID, ARTIST, "UTILISE", CHARLIE);

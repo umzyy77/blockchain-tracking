@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * Proof of Stake (PoS) : les validateurs sont choisis proportionnellement
@@ -18,7 +18,7 @@ public class ProofOfStake implements ConsensusMechanism {
     private static final Logger logger = LoggerFactory.getLogger(ProofOfStake.class);
 
     private final Map<String, Integer> stakes;
-    private final Random random = new Random();
+    private final SecureRandom random = new SecureRandom();
 
     public ProofOfStake() {
         this.stakes = new LinkedHashMap<>();
